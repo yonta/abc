@@ -1,0 +1,11 @@
+_require "basis.smi"
+_require "MINIMUM_ARRAY.smi"
+
+structure Array31 =
+struct
+  eqtype 'a array (= boxed)
+  val maxLen : int
+  val array : int * 'a -> 'a array
+  val sub: 'a array * int -> 'a
+  val update: 'a array * int * 'a -> unit
+end
