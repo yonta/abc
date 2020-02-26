@@ -1,7 +1,11 @@
-signature MODULAR_INT =
-sig
-  type int = int
+_require "basis.smi"
+_require local "MEMOIZED_MODULAR_INT.sig"
+
+structure MemoizedModularInt =
+struct
+  type int = Int.int
   val modulo : int
+  val maxInt : int
   val toModular : Int.int -> int
   val + : int * int -> int
   val - : int * int -> int

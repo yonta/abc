@@ -1,7 +1,8 @@
-signature MODULAR_INT =
+signature MEMOIZED_MODULAR_INT =
 sig
-  type int = int
+  type int
   val modulo : int
+  val maxInt : int
   val toModular : Int.int -> int
   val + : int * int -> int
   val - : int * int -> int
