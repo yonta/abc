@@ -1,0 +1,13 @@
+_require "basis.smi"
+_require "MODULAR_INT.smi"
+_require "../array31/array31.smi"
+
+structure ModularInt =
+struct
+  val modulo : int
+  val toModular : int -> int
+  val pow : int -> int -> int
+  val nCk : int -> int -> int
+  val inverse : int -> int
+  val factorial : int -> int
+end
