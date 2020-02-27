@@ -45,18 +45,12 @@ struct
 
   fun nPkImpl acc n 0 = acc
     | nPkImpl acc n k = nPkImpl (acc * n) (Int.- (n, 1)) (Int.- (k, 1))
-  fun nPk n k = nPkImpl 1 n k
+  fun nPk n k = if n < k then raise Domain else nPkImpl 1 n k
 
   fun nCk n k =
       if n < k then raise Domain
       else if n < k * 2 then nCk n (n - k)
-      else
-        let
-          val npk = nPk n k
-          val kkai = nPk k k
-        in
-          npk div kkai
-        end
+      else (nPk n k) div (nPk k k)
 
   fun factorialImpl acc 0 = acc
     | factorialImpl acc n = factorialImpl (acc * n) (Int.- (n, 1))

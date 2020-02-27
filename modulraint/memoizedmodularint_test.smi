@@ -1,8 +1,8 @@
 _require "basis.smi"
 _require "smlunit-lib.smi"
-_require "modularint.smi"
+_require "memoizedmodularint.smi"
 
-structure ModularIntTest =
+structure MemoizedModularIntTest =
 struct
   val suite : SMLUnit.Test.test
 end

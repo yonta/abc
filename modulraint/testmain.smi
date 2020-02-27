@@ -1,3 +1,0 @@
-_require "basis.smi"
-_require "../array31/array31.smi"
-_require "modularint.smi"

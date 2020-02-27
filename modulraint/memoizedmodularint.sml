@@ -63,7 +63,6 @@ struct
         arr
       end
   (* (n!)^(-1) table, 0 access is error *)
-  (*
   val factInvTable =
       let
         val arr = Array.array (maxInt, NONE)
@@ -71,7 +70,6 @@ struct
       in
         arr
       end
-  *)
 
   fun inverseImpl n =
       case Array.sub (invTable, n) of
@@ -98,14 +96,25 @@ struct
             facN
           end
         | SOME x => x
-  fun factorial n = if n < 0 orelse maxInt < n then raise Size
+  fun factorial n = if n < 0 orelse maxInt < n then raise Domain
                     else factorialImpl n
+
+  fun facInvImpl n =
+      case Array.sub (factInvTable, n) of
+          NONE =>
+          let
+            val facInvN = facInvImpl (Int.- (n, 1)) * inverse n
+            val () = Array.update (factInvTable, n, SOME facInvN)
+          in
+            facInvN
+          end
+        | SOME x => x
+  fun facInv n = if n <= 0 orelse maxInt < n then raise Domain
+                 else facInvImpl n
 
   fun nPkImpl acc n 0 = acc
     | nPkImpl acc n k = nPkImpl (acc * n) (Int.- (n, 1)) (Int.- (k, 1))
   fun nPk n k = nPkImpl 1 n k
 
-  fun nCk n k =
-      factorial n * inverse (factorial k) * inverse (factorial (n - k))
-
+  fun nCk n k = factorial n * facInv k * facInv (Int.- (n, k))
 end (* struct *)
