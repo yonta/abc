@@ -62,7 +62,9 @@ fun main () =
       val bingoReader = listReader [lineReader, lineReader, lineReader]
       val (initNums, instream) = valOf (bingoReader instream)
                             handle Option.Option
-                                   => raise Fail "bug: invalid input"
+                                   => raise Fail "bug: invalid input 9x9"
+      val N = valOf (intReader instream)
+              handle Option.Option => raise Fail "bug: invalid input N"
       val bingo = makeBingo initNums
       val result = openNumberLoop intReader instream bingo
       val () = TextIO.setInstream (io, instream)
