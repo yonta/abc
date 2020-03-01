@@ -24,7 +24,6 @@ fun setConstraint lineReader instream constraint =
         in  setConstraint lineReader instream constraint end
 fun makeSmallestNumber nil = nil
   | makeSmallestNumber [(1, NONE)] = [0]
-  | makeSmallestNumber [(1, SOME 0)] = [0]
   | makeSmallestNumber [(1, SOME n)] = [n]
   | makeSmallestNumber ((1, NONE) :: cs) = 1 :: makeSmallestNumber cs
   | makeSmallestNumber ((1, SOME 0) :: _) = raise Invalid
