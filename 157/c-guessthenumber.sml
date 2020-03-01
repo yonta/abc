@@ -30,8 +30,6 @@ fun makeSmallestNumber nil = nil
   | makeSmallestNumber ((1, SOME n) :: cs) = n :: makeSmallestNumber cs
   | makeSmallestNumber ((index, NONE) :: cs) = 0 :: makeSmallestNumber cs
   | makeSmallestNumber ((index, SOME num) :: cs) = num :: makeSmallestNumber cs
-fun printNumber nil = ()
-  | printNumber (num :: nums) = (print (Int.toString num); printNumber nums)
 
 fun main () =
     let
@@ -48,7 +46,7 @@ fun main () =
       val () = TextIO.setInstream (io, instream)
       val numbers = makeSmallestNumber constraint
     in
-      printNumber numbers
+      app (print o Int.toString) numbers
     end
     handle Invalid => print "-1"
 val () = main ()
