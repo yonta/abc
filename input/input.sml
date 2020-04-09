@@ -1,6 +1,8 @@
 structure Input
           : sig
-            type ('a, 'b) reader = ('a, 'b) StringCvt.reader
+            type ('result, 'input) reader = ('result, 'input) StringCvt.reader
+            type ('result, 'input) scanner = (char, 'input) reader
+                                             -> ('result, 'input) reader
             val test : (unit -> unit) -> string -> unit
             val makeStringReader :
                 ((char, substring) reader -> ('a, substring) reader)
@@ -18,14 +20,30 @@ structure Input
             val ** : ('result, 'input) reader -> ('result list, 'input) reader
             val listReader : ('result, 'input) reader list
                              -> ('result list, 'input) reader
-            val skipOneChar : char -> (char, 'input) reader -> 'input -> 'input
-            val skipChar : char -> (char, 'input) reader -> 'input -> 'input
+            val skipOne : (char -> bool)
+                          -> (char, 'input) reader -> 'input -> 'input
+            val scan : (char -> bool)
+                         -> (char, 'input) reader -> (string, 'input) reader
+            val skip : (char -> bool)
+                       -> (char, 'input) reader -> 'input -> 'input
+            val skipWS : (char, 'input) reader -> 'input -> 'input
+            val &&& : ('result1, 'input) scanner * ('result2, 'input) scanner
+                      -> ('result1 * 'result2, 'input) scanner
+            val >&&& : ((char, 'input) reader -> 'input -> 'input)
+                       * ('result, 'input) scanner
+                       -> ('result, 'input) scanner
             val showRestSubstring : ('result * substring) option
                                     -> ('result * string) option
+            val scanForString : ('result, substring) scanner
+                                -> ('result, string) reader
           end
 =
 struct
-  type ('a, 'b) reader = ('a, 'b) StringCvt.reader
+  infix && || >&& &&> ||> &&& >&&&
+
+  type ('result, 'input) reader = ('result, 'input) StringCvt.reader
+  type ('result, 'input) scanner = (char, 'input) reader
+                                   -> ('result, 'input) reader
 
   fun test f filename =
       let
@@ -98,20 +116,41 @@ struct
               NONE => NONE
             | SOME (results, rest2) => SOME (result :: results, rest2)
 
-  fun skipOneChar char reader input =
+  fun skipOne charis reader input =
       case reader input of
           NONE => input
-        | SOME (c, rest) => if c = char then rest else input
+        | SOME (c, rest) => if charis c then rest else input
 
-  fun skipChar char reader input =
-      case reader input of
+  local
+    fun makeResult chars input =
+        if null chars then NONE else SOME (String.implode (rev chars), input)
+    fun scanImpl acc charis getc input =
+        case getc input of
+            NONE => makeResult acc input
+          | SOME (c, newInput) =>
+            if charis c then scanImpl (c :: acc) charis getc newInput
+            else makeResult acc input
+  in
+  fun scan charis getc input = scanImpl nil charis getc input
+  end
+
+  fun skip charis getc input =
+      case scan charis getc input of
           NONE => input
-        | SOME(c, rest) =>
-          if c = char then skipChar char reader rest else input
+        | SOME (_, rest) => rest
+
+  fun skipWS getc input = StringCvt.skipWS getc input
+
+  fun op &&& (scan1, scan2) getc input = (scan1 getc && scan2 getc) input
+  fun op >&&& (f, scan2) getc input = (f getc >&& scan2 getc) input
 
   fun showRestSubstring NONE = NONE
     | showRestSubstring (SOME (result, substr)) =
       SOME (result, Substring.string substr)
+
+  fun scanForString scan input =
+      showRestSubstring (scan Substring.getc (Substring.full input))
+
 end
 
 (* example *)
