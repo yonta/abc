@@ -20,6 +20,8 @@ structure Input
             val ** : ('result, 'input) reader -> ('result list, 'input) reader
             val listReader : ('result, 'input) reader list
                              -> ('result list, 'input) reader
+            val nth : int -> ('result, 'input) reader
+                      -> ('result list, 'input) reader
             val skipOne : (char -> bool)
                           -> (char, 'input) reader -> 'input -> 'input
             val scan : (char -> bool)
@@ -115,6 +117,17 @@ struct
           case listReader readers rest of
               NONE => NONE
             | SOME (results, rest2) => SOME (result :: results, rest2)
+
+  fun nthImpl 0 reader input = SOME (nil, input)
+    | nthImpl n reader input =
+      case reader input of
+          NONE => NONE
+        | SOME (result1, rest1) =>
+          case nthImpl (n - 1) reader rest1 of
+              NONE => NONE
+            | SOME (result2, rest2) => SOME (result1 :: result2, rest2)
+  fun nth n reader input =
+      if n < 0 then raise Domain else nthImpl n reader input
 
   fun skipOne charis reader input =
       case reader input of
