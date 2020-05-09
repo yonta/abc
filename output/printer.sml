@@ -1,57 +1,62 @@
 structure Printer
-          : sig
-            type 'elem printer = 'elem -> unit
-            type 'elem generator = ('elem -> string) -> 'elem printer
-            val generator : 'elem generator
-            val p : 'elem printer
-            val pi : int printer
-            val pc : char printer
-            val pr : real printer
-            val pb : bool printer
-            val po : 'elem printer -> 'elem option printer
-            val pList : 'elem printer -> 'elem list printer
-            val pArr : 'elem printer -> 'elem array printer
-            val pVec : 'elem printer -> 'elem vector printer
+          :sig
+            type 'elem fmt
+            type 'elem p = 'elem -> 'elem fmt
+            val p : 'elem fmt -> unit
+            val pi : int p
+            val pc : char p
+            val pr : real p
+            val pb : bool p
+            val po : 'elem p -> 'elem option p
+            val p2 : 'elem1 p * 'elem2 p -> 'elem1 * 'elem2 -> 'elem fmt
+            val p3 : 'elem1 p * 'elem2 p * 'elem3 p ->
+                     'elem1 * 'elem2 * 'elem3 -> 'elem fmt
+            val p4 : 'elem1 p * 'elem2 p * 'elem3 p * 'elem4 p ->
+                     'elem1 * 'elem2 * 'elem3 * 'elem4 -> 'elem fmt
+            val pl : 'elem p -> 'elem list p
+            val parr : 'elem p -> 'elem array p
+            val pvec : 'elem p -> 'elem vector p
           end
 =
 struct
-  type 'elem printer = 'elem -> unit
-  type 'elem generator = ('elem -> string) -> 'elem printer
-  fun p makeContainerPrinter = (makeContainerPrinter; print "\n")
+  (* p is a fomat to print *)
+  type 'elem fmt = string list
+  type 'elem p = 'elem -> 'elem fmt
+  fun p strs = (app print strs; print "\n")
+  fun pi n = [Int.toString n]
+  fun pc c = [Char.toString c]
+  fun pr r = [Real.toString r]
+  fun pb b = [Bool.toString b]
+  fun po pe NONE = ["NONE"]
+    | po pe (SOME x) = "SOME " :: pe x
 
-  fun generator toString elem = (print o toString) elem
-  fun pi n = generator Int.toString n
-  fun pc c = generator Char.toString c
-  fun pr r = generator Real.toString r
-  fun pb b = generator Bool.toString b
-  fun po pElem NONE = print "NONE"
-    | po pElem (SOME x) = (print "SOME "; pElem x)
-
-  fun pListElem pElem nil = ()
-    | pListElem pElem [e] = pElem e
-    | pListElem pElem (h::t) = (pElem h; print ","; pListElem pElem t)
-  fun pList pElem l = (print "["; pListElem pElem l; print "]")
-
-  fun pArrAndVec opener separater closer appi elemPrinter elems =
-      (print opener;
-       appi
-         (fn (0, elem) => elemPrinter elem
-           | (_, elem) => (print separater; elemPrinter elem))
-         elems;
-       print closer)
-  fun pArr pElem arr = pArrAndVec "<" "," ">" Array.appi pElem arr
-  fun pVec pElem vec = pArrAndVec "<|" "," "|>" Vector.appi pElem vec
+  local
+    fun withHeadComma pelem (elem, accum) = "," :: pelem elem @ accum
+    fun removeComma ("," :: l) = l | removeComma l = l
+    fun makeContainerPrinter opener closer foldr pelem elems =
+        opener :: removeComma (foldr (withHeadComma pelem) [closer] elems)
+    fun id x = x
+  in
+  fun p2 (pe1, pe2) (x1, x2) =
+      makeContainerPrinter "(" ")" foldr id [pe1 x1, pe2 x2]
+  fun p3 (pe1, pe2, pe3) (x1, x2, x3) =
+      makeContainerPrinter "(" ")" foldr id [pe1 x1, pe2 x2, pe3 x3]
+  fun p4 (pe1, pe2, pe3, pe4) (x1, x2, x3, x4) =
+      makeContainerPrinter "(" ")" foldr id [pe1 x1, pe2 x2, pe3 x3, pe4 x4]
+  fun pl pe l = makeContainerPrinter "[" "]" foldr pe l
+  fun parr pe arr = makeContainerPrinter "<" ">" Array.foldr pe arr
+  fun pvec pe vec = makeContainerPrinter "<|" "|>" Vector.foldr pe vec
+  end
 end
 
-infixr 0 \
-infix 1 %
-fun op \ (makeContainerPrinter, g) = makeContainerPrinter g
-fun op % (makeContainerPrinter, g) = makeContainerPrinter g
- 
+(* val % : ('a -> 'b) * 'a -> 'b *)
+infixr 0 %
+fun op % (f, g) = f g
+
 (* example
 local
   open Printer
 in
-val () = p% pArr (po pi) (Array.fromList [NONE, SOME 1, SOME 2])
+val () = p% parr (po pi) (Array.fromList [NONE, SOME 1, SOME 2])
 end
  *)

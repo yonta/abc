@@ -2,18 +2,22 @@ _require "basis.smi"
 
 structure Printer =
 struct
-  type 'elem printer = 'elem -> unit
-  type 'elem generator = ('elem -> string) -> 'elem printer
-  val generator : 'elem generator
-  val p : 'elem printer
-  val pi : int printer
-  val pc : char printer
-  val pr : real printer
-  val pb : bool printer
-  val po : 'elem printer -> 'elem option printer
-  val pList : 'elem printer -> 'elem list printer
-  val pArr : 'elem printer -> 'elem array printer
-  val pVec : 'elem printer -> 'elem vector printer
+  type 'elem fmt (= boxed)
+  type 'elem p = 'elem -> 'elem fmt
+  val p : 'elem fmt -> unit
+  val pi : int p
+  val pc : char p
+  val pr : real p
+  val pb : bool p
+  val po : 'elem p -> 'elem option p
+  val p2 : 'elem1 p * 'elem2 p -> 'elem1 * 'elem2 -> 'elem fmt
+  val p3 : 'elem1 p * 'elem2 p * 'elem3 p ->
+           'elem1 * 'elem2 * 'elem3 -> 'elem fmt
+  val p4 : 'elem1 p * 'elem2 p * 'elem3 p * 'elem4 p ->
+           'elem1 * 'elem2 * 'elem3 * 'elem4 -> 'elem fmt
+  val pl : 'elem p -> 'elem list p
+  val parr : 'elem p -> 'elem array p
+  val pvec : 'elem p -> 'elem vector p
 end
 
 infix 0 %
