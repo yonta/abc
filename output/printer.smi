@@ -1,0 +1,20 @@
+_require "basis.smi"
+
+structure Printer =
+struct
+  type 'elem printer = 'elem -> unit
+  type 'elem generator = ('elem -> string) -> 'elem printer
+  val generator : 'elem generator
+  val p : 'elem printer
+  val pi : int printer
+  val pc : char printer
+  val pr : real printer
+  val pb : bool printer
+  val po : 'elem printer -> 'elem option printer
+  val pList : 'elem printer -> 'elem list printer
+  val pArr : 'elem printer -> 'elem array printer
+  val pVec : 'elem printer -> 'elem vector printer
+end
+
+infix 0 %
+val % : ('a -> 'b) * 'a -> 'b
