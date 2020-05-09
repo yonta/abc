@@ -2,19 +2,19 @@ _require "basis.smi"
 
 structure Printer =
 struct
-  type 'elem fmt (= boxed)
-  type 'elem p = 'elem -> 'elem fmt
-  val p : 'elem fmt -> unit
+  type fmt (= boxed)
+  type 'elem p = 'elem -> fmt
+  val p : fmt -> unit
   val pi : int p
   val pc : char p
   val pr : real p
   val pb : bool p
   val po : 'elem p -> 'elem option p
-  val p2 : 'elem1 p * 'elem2 p -> 'elem1 * 'elem2 -> 'elem fmt
+  val p2 : 'elem1 p * 'elem2 p -> 'elem1 * 'elem2 -> fmt
   val p3 : 'elem1 p * 'elem2 p * 'elem3 p ->
-           'elem1 * 'elem2 * 'elem3 -> 'elem fmt
+           'elem1 * 'elem2 * 'elem3 -> fmt
   val p4 : 'elem1 p * 'elem2 p * 'elem3 p * 'elem4 p ->
-           'elem1 * 'elem2 * 'elem3 * 'elem4 -> 'elem fmt
+           'elem1 * 'elem2 * 'elem3 * 'elem4 -> fmt
   val pl : 'elem p -> 'elem list p
   val parr : 'elem p -> 'elem array p
   val pvec : 'elem p -> 'elem vector p

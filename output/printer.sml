@@ -1,41 +1,62 @@
 structure Printer
           :sig
-            type 'elem fmt
-            type 'elem p = 'elem -> 'elem fmt
-            val p : 'elem fmt -> unit
+            type fmt
+            type 'elem p = 'elem -> fmt
+            val p : fmt -> unit
             val pi : int p
             val pc : char p
             val pr : real p
             val pb : bool p
             val po : 'elem p -> 'elem option p
-            val p2 : 'elem1 p * 'elem2 p -> 'elem1 * 'elem2 -> 'elem fmt
+            val p2 : 'elem1 p * 'elem2 p -> 'elem1 * 'elem2 -> fmt
             val p3 : 'elem1 p * 'elem2 p * 'elem3 p ->
-                     'elem1 * 'elem2 * 'elem3 -> 'elem fmt
+                     'elem1 * 'elem2 * 'elem3 -> fmt
             val p4 : 'elem1 p * 'elem2 p * 'elem3 p * 'elem4 p ->
-                     'elem1 * 'elem2 * 'elem3 * 'elem4 -> 'elem fmt
+                     'elem1 * 'elem2 * 'elem3 * 'elem4 -> fmt
             val pl : 'elem p -> 'elem list p
             val parr : 'elem p -> 'elem array p
             val pvec : 'elem p -> 'elem vector p
           end
 =
 struct
-  (* p is a fomat to print *)
-  type 'elem fmt = string list
-  type 'elem p = 'elem -> 'elem fmt
-  fun p strs = (app print strs; print "\n")
-  fun pi n = [Int.toString n]
-  fun pc c = [Char.toString c]
-  fun pr r = [Real.toString r]
-  fun pb b = [Bool.toString b]
-  fun po pe NONE = ["NONE"]
-    | po pe (SOME x) = "SOME " :: pe x
+  datatype ptree = Leaf of string
+                 | Node of ptree * ptree list * ptree
+  type fmt = ptree
+  type 'elem p = 'elem -> fmt   (* type p is fomated string to print *)
+  local
+    fun pImpl (Leaf s) = print s
+      | pImpl (Node (p1, ps, p2)) =
+        (pImpl p1; app pImpl ps; pImpl p2)
+  in
+  fun p fmt = (pImpl fmt; print "\n")
+  end
+
+  fun pi n = Leaf (Int.toString n)
+  fun pc c = Leaf (Char.toString c)
+  fun pr r = Leaf (Real.toString r)
+  fun pb b = Leaf (Bool.toString b)
+  fun po pe NONE = Leaf "NONE"
+    | po pe (SOME x) = Node (Leaf "SOME ", nil, pe x)
 
   local
-    fun withHeadComma pelem (elem, accum) = "," :: pelem elem @ accum
-    fun removeComma ("," :: l) = l | removeComma l = l
-    fun makeContainerPrinter opener closer foldr pelem elems =
-        opener :: removeComma (foldr (withHeadComma pelem) [closer] elems)
+    fun plImpl pe nil = nil
+      | plImpl pe [x] = [pe x]
+      | plImpl pe (x :: xs) = pe x :: Leaf "," :: plImpl pe xs
+  in
+  fun pl pe l = Node (Leaf "[", plImpl pe l, Leaf "]")
+  end
+
+  local
     fun id x = x
+    fun withHeadComma pe (elem, accum) = Leaf "," :: pe elem :: accum
+    fun removeComma (Leaf "," :: l) = l | removeComma l = l
+    fun makeContainerPrinter opener closer foldr pe container =
+        let
+          val ptrees = foldr (withHeadComma pe) nil container
+          val ptrees = removeComma ptrees
+        in
+          Node (Leaf opener, ptrees, Leaf closer)
+        end
   in
   fun p2 (pe1, pe2) (x1, x2) =
       makeContainerPrinter "(" ")" foldr id [pe1 x1, pe2 x2]
