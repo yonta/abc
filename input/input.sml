@@ -4,9 +4,8 @@ structure Input
             type ('result, 'input) scanner = (char, 'input) reader
                                              -> ('result, 'input) reader
             val test : (unit -> unit) -> string -> unit
-            val makeStringReader :
-                ((char, substring) reader -> ('a, substring) reader)
-                -> ('a, string) reader
+            val scanForString : ('result, substring) scanner
+                                -> ('result, string) reader
             val && : ('result1, 'input) reader * ('result2, 'input) reader
                      -> (('result1 * 'result2), 'input) reader
             val || : ('result1, 'input) reader * ('result1, 'input) reader
@@ -34,10 +33,6 @@ structure Input
             val >&&& : ((char, 'input) reader -> 'input -> 'input)
                        * ('result, 'input) scanner
                        -> ('result, 'input) scanner
-            val showRestSubstring : ('result * substring) option
-                                    -> ('result * string) option
-            val scanForString : ('result, substring) scanner
-                                -> ('result, string) reader
           end
 =
 struct
@@ -66,7 +61,7 @@ struct
         ()
       end
 
-  fun makeStringReader scan input =
+  fun scanForString scan input =
       let
         val substr = Substring.full input
         val reader = scan Substring.getc substr
