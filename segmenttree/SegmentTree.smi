@@ -1,0 +1,10 @@
+_require "basis.smi"
+
+structure SegmentTree =
+struct
+  datatype 'elem t =
+           Node of 'elem * 'elem t * 'elem t
+           | Leaf of 'elem
+           | NoneLeaf
+  val make : 'elem list -> ('elem -> 'elem -> 'elem) -> 'elem t
+end
